@@ -99,8 +99,6 @@ class Predictor:
 
 
 
-
-
     def predict(self, newData: Union[str, pd.DataFrame]) -> np.ndarray:
         data = newData
         if isinstance(newData, str):

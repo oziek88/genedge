@@ -3,7 +3,7 @@ from flask import render_template
 from flask import request
 from flask import jsonify
 import requests
-# import pandas as pd
+import pandas as pd
 
 app = Flask(__name__)
 
