@@ -4,6 +4,7 @@ from flask import request
 from flask import jsonify
 import requests
 import pandas as pd
+import model
 
 app = Flask(__name__)
 
@@ -16,7 +17,11 @@ def homepage():
     team_members = "Charlie Fitzgerald, Geoff Hancock, Ian Kitchens, Harrison Li, Aaron Newman"
     data = pd.read_csv("All_Data_Hourly_8760_for_input.csv")
     columns = ["DateTime", "DayOfWeek", "DayType", "Wholesale", "Retail", "WholewVariance", "RetailwVariance",
-               "BuildingLoad", "WindProduction", "PVgeneration", "GHI"]
+               "BuildingLoad", "WindProduction", "PVgeneration", "GHI", "apparentTemperature",
+               "cloudCover", "precipIntensity", "windSpeed"]
+    trainColumns = ["DayOfWeek", "Wholesale", "Retail", "WholewVariance", "RetailwVariance",
+               "BuildingLoad", "WindProduction", "PVgeneration", "GHI", "apparentTemperature",
+               "cloudCover", "precipIntensity", "windSpeed"]
     data.columns = columns
     buildingData = data[["DateTime", "BuildingLoad"]]
     buildingData = buildingData.to_json(orient="records")
@@ -27,16 +32,47 @@ def homepage():
     data['netLoad'] = data["BuildingLoad"] - data["PVgeneration"] - data["WindProduction"]
     netData = data[["DateTime", "netLoad"]]
     netData = netData.to_json(orient="records")
+    buildingPredictor = model.Predictor(model.defaultBoostedRegressorParams)
+    trainData = pd.read_csv("training.csv")
+    trainData.columns = trainColumns
+    relevantColumns = ["BuildingLoad", "apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"]
+    relevantColumns2 = ["WindProduction", "apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"]
+    relevantColumns3 = ["PVgeneration", "apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"]
+    trainData1 = trainData[relevantColumns]
+    trainData2 = trainData[relevantColumns2]
+    trainData3 = trainData[relevantColumns3]
+    buildingPredictor.train(trainData1, "BuildingLoad")
+    windPredictor = model.Predictor(model.defaultBoostedRegressorParams)
+    windPredictor.train(trainData2, "WindProduction")
+    pvPredictor = model.Predictor(model.defaultBoostedRegressorParams)
+    pvPredictor.train(trainData3, "PVgeneration")
+    models = {"Wind": windPredictor, "Building": buildingPredictor, "pv": pvPredictor}
+    forecastData = pd.read_csv("forecastcsv.csv")
+    predictions = predictAWeek(forecastData, models)
     # print(graphData)
     # print(data.head())
     # graphData = data[]
+    # print(predictions.head())
     variables = {"team": genedge, "members": team_members,
                  "building_data": buildingData,
                  "wind_data": windData,
                  "pv_data": pvData,
-                 "net_data": netData
+                 "net_data": netData,
+                 "forecasted_data": predictions
                  }
     return render_template("home.html", **variables)
+
+def predictAWeek(forecast, models):
+    predictions = pd.DataFrame(columns=["WindProduction", "BuildingLoad", "PVgeneration"])
+    for i, row in forecast.iterrows():
+        predictedWeather = pd.DataFrame([[row["apparentTemperature"],row["cloudCover"], row["precipIntensity"], row["windSpeed"]]], columns=["apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"])
+        windprediction = models["Wind"].predict(predictedWeather)
+        buildingprediction = models["Building"].predict(predictedWeather)
+        pvprediction = models["pv"].predict(predictedWeather)
+        tempFrame = pd.DataFrame([[windprediction, buildingprediction, pvprediction]] , columns=["WindProduction", "BuildingLoad", "PVgeneration"])
+        predictions.append(tempFrame)
+    return predictions
+
 
 @app.route("/weather_forecast")
 def get_forecast():

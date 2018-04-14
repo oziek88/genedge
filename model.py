@@ -2,8 +2,6 @@ import time
 import numpy as np
 import os
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from datetime import datetime
 from sklearn.model_selection import KFold
 from sklearn.ensemble import GradientBoostingRegressor
@@ -20,9 +18,9 @@ defaultBoostedRegressorParams = {
     'max_depth': 5,
     'n_estimators': 1000
 }
-defaultTrainingData = "SOMEPATH"
-defaultTestingData = "SOMEPATH"
-defaultNewDataDir = "SOMEPATH"
+defaultTrainingData = "./"
+defaultTestingData = "./"
+defaultNewDataDir = "./"
 
 def adjustedRScore(rSquared: float, numDataPts: int, numPredictors: int) -> float:
     numerator = (1 - rSquared) * (numDataPts - 1)
@@ -33,9 +31,9 @@ class Predictor:
     """based on: https://www.kaggle.com/hguimaraes/pysolar-dataset-exploration-and-train-test
     NOTE: maybe need to add in other sources so that it outputs: Wind speed, air temp, dhi, dni, ghi"""
     def __init__(self, modelParams:dict=None,
-                 trainingDataDir: str=None,
-                 testingDataDir: str=None,
-                 newDataDir: str=None):
+                 trainingDataDir: str=defaultTrainingData,
+                 testingDataDir: str=defaultTestingData,
+                 newDataDir: str=defaultNewDataDir):
         self.trainingDir = trainingDataDir
         self.testingDir = testingDataDir
         self.newDataDir = newDataDir
@@ -81,20 +79,20 @@ class Predictor:
                Ypredictions, \
                Ytest
 
-    def transformData(self, data: pd.DataFrame, goalLabel: str):
-        """
-
-        :return: a pandas DataFrame object that is in the format for the model to be trained, where one column
-        is the goal and the rest are input parameters. Rows / indices are timestamps
-        """
-        count = 0
-        newColumns = ["dayBack" + str(count) for count in range(1, self.daysBack+1)]
-        for i, row in data.iterrows():
-            if count < 6:
-                count += 1
-                pass
-            else:
-                for days in range(self.daysBack):
+    # def transformData(self, data: pd.DataFrame, goalLabel: str):
+    #     """
+    #
+    #     :return: a pandas DataFrame object that is in the format for the model to be trained, where one column
+    #     is the goal and the rest are input parameters. Rows / indices are timestamps
+    #     """
+    #     count = 0
+    #     newColumns = ["dayBack" + str(count) for count in range(1, self.daysBack+1)]
+    #     for i, row in data.iterrows():
+    #         if count < self.daysBack:
+    #             count += 1
+    #             pass
+    #         else:
+    #             for days in range(self.daysBack):
 
 
 
@@ -123,7 +121,7 @@ if __name__ == "__main__":
     X = trainingData[["SOME HEADERS"]]
     y = trainingData[["SOMEGOAL"]]
 
-    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, y, test_size=0.25)
+    # Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, y, test_size=0.25)
     predictor.train(Xtrain, Ytrain)
     MSE, adjRScore, predictions, trueValues = predictor.test(Xtest, Ytest)
     print(adjRScore)
