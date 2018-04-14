@@ -7,7 +7,7 @@ import pandas as pd
 def homepage():
     genedge = "GEN.EDGE"
     team_members = "Charlie Fitzgerald, Geoff Hancock, Ian Kitchens, Harrison Li, Aaron Newman"
-    data = pd.read_csv("All_Data_Hourly_8760.xlsx")
+    data = pd.read_csv("All_Data_Hourly_8760_for_input.csv")
     graphData = data[["Date Time (Start)", "Wholesale ($/kWh)"]]
     graphData = graphData.to_json()
     print(data.head())
