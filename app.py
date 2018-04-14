@@ -18,7 +18,7 @@ def homepage():
                "BuildingLoad", "WindProduction", "PVgeneration", "GHI"]
     data.columns = columns
     graphData = data[["DateTime", "Wholesale"]]
-    graphData = graphData.to_json()
+    graphData = graphData.to_json(orient="records")
     print(data.head())
     # graphData = data[]
     variables = {"team": genedge, "members": team_members, "chart_data": graphData}
