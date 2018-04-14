@@ -17,11 +17,23 @@ def homepage():
     columns = ["DateTime", "DayOfWeek", "DayType", "Wholesale", "Retail", "WholewVariance", "RetailwVariance",
                "BuildingLoad", "WindProduction", "PVgeneration", "GHI"]
     data.columns = columns
-    graphData = data[["DateTime", "Wholesale"]]
-    graphData = graphData.to_json(orient="records")
-    print(data.head())
+    buildingData = data[["DateTime", "BuildingLoad"]]
+    buildingData = buildingData.to_json(orient="records")
+    windData = data[["DateTime", "WindProduction"]]
+    windData = windData.to_json(orient="records")
+    pvData = data[["DateTime", "PVgeneration"]]
+    pvData = pvData.to_json(orient="records")
+    netData = data["BuildingLoad"] - data["PVgeneration"] - data["WindProduction"]
+    netData = netData.to_json(orient="records")
+    # print(graphData)
+    # print(data.head())
     # graphData = data[]
-    variables = {"team": genedge, "members": team_members, "chart_data": graphData}
+    variables = {"team": genedge, "members": team_members,
+                 "building_data": buildingData,
+                 "wind_data": windData,
+                 "pv_data": pvData,
+                 "net_data": netData
+                 }
     return render_template("home.html", **variables)
 
 @app.route("/weather_forecast")
