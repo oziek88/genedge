@@ -87,6 +87,14 @@ class Predictor:
         :return: a pandas DataFrame object that is in the format for the model to be trained, where one column
         is the goal and the rest are input parameters. Rows / indices are timestamps
         """
+        count = 0
+        newColumns = ["dayBack" + str(count) for count in range(1, self.daysBack+1)]
+        for i, row in data.iterrows():
+            if count < 6:
+                count += 1
+                pass
+            else:
+                for days in range(self.daysBack):
 
 
 
