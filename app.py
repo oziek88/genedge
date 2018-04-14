@@ -24,7 +24,8 @@ def homepage():
     windData = windData.to_json(orient="records")
     pvData = data[["DateTime", "PVgeneration"]]
     pvData = pvData.to_json(orient="records")
-    netData = data["BuildingLoad"] - data["PVgeneration"] - data["WindProduction"]
+    data['netLoad'] = data["BuildingLoad"] - data["PVgeneration"] - data["WindProduction"]
+    netData = data[["DateTime", "netLoad"]]
     netData = netData.to_json(orient="records")
     # print(graphData)
     # print(data.head())
