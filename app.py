@@ -3,6 +3,8 @@ from flask import render_template
 from flask import request
 from flask import jsonify
 import requests
+import pandas as pd
+
 app = Flask(__name__)
 
 API_KEY='0fce4f7d72de5c934ab7dc9691c6447b'
@@ -11,7 +13,15 @@ API_KEY='0fce4f7d72de5c934ab7dc9691c6447b'
 def homepage():
     genedge = "GEN.EDGE"
     team_members = "Charlie Fitzgerald, Geoff Hancock, Ian Kitchens, Harrison Li, Aaron Newman"
-    variables = {"team": genedge, "members": team_members}
+    data = pd.read_csv("All_Data_Hourly_8760_for_input.csv")
+    columns = ["DateTime", "DayOfWeek", "DayType", "Wholesale", "Retail", "WholewVariance", "RetailwVariance",
+               "BuildingLoad", "WindProduction", "PVgeneration", "GHI"]
+    data.columns = columns
+    graphData = data[["DateTime", "Wholesale"]]
+    graphData = graphData.to_json()
+    print(data.head())
+    # graphData = data[]
+    variables = {"team": genedge, "members": team_members, "chart_data": graphData}
     return render_template("home.html", **variables)
 
 @app.route("/weather_forecast")
@@ -30,4 +40,7 @@ def get_historical():
     return response
     
 if __name__ == "__main__":
+    # data = pd.read_csv("All_Data_Hourly_8760_for_input.csv")
+    # print(data.head())
+    # print(list(data))
     app.run()
