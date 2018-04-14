@@ -49,6 +49,12 @@ def homepage():
     models = {"Wind": windPredictor, "Building": buildingPredictor, "pv": pvPredictor}
     forecastData = pd.read_csv("forecastcsv.csv")
     predictions = predictAWeek(forecastData, models)
+    buildingPredictions = predictions[["Datetime", "BuildingLoad"]]
+    buildingPredictions = buildingPredictions.to_json(orient='records')
+    windPredictions = predictions[["Datetime", "WindProduction"]]
+    windPredictions = windPredictions.to_json(orient='records')
+    pvPredictions = predictions[["Datetime", "PVgeneration"]]
+    pvPredictions = pvPredictions.to_json(orient='records')
     # print(graphData)
     # print(data.head())
     # graphData = data[]
@@ -58,7 +64,9 @@ def homepage():
                  "wind_data": windData,
                  "pv_data": pvData,
                  "net_data": netData,
-                 "forecasted_data": predictions
+                 "forecast_building": buildingPredictions,
+                 "forecast_wind": windPredictions,
+                 "pvPredictions": pvPredictions
                  }
     return render_template("home.html", **variables)
 
@@ -71,6 +79,7 @@ def predictAWeek(forecast, models):
         pvprediction = models["pv"].predict(predictedWeather)
         tempFrame = pd.DataFrame([[windprediction, buildingprediction, pvprediction]] , columns=["WindProduction", "BuildingLoad", "PVgeneration"])
         predictions.append(tempFrame)
+    predictions['Datetime'] = range(24)
     return predictions
 
 
