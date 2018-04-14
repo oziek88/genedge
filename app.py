@@ -8,7 +8,10 @@ def homepage():
     genedge = "GEN.EDGE"
     team_members = "Charlie Fitzgerald, Geoff Hancock, Ian Kitchens, Harrison Li, Aaron Newman"
     data = pd.read_csv("All_Data_Hourly_8760_for_input.csv")
-    graphData = data[["Date Time (Start)", "Wholesale ($/kWh)"]]
+    columns = ["DateTime", "DayOfWeek", "DayType", "Wholesale", "Retail", "WholewVariance", "RetailwVariance",
+               "BuildingLoad", "WindProduction", "PVgeneration", "GHI"]
+    data.columns = columns
+    graphData = data[["DateTime", "Wholesale"]]
     graphData = graphData.to_json()
     print(data.head())
     # graphData = data[]
