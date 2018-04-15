@@ -58,6 +58,7 @@ def homepage():
     pvPredictions = pvPredictions.to_json(orient='records')
     predictions["netLoad"] = predictions["BuildingLoad"] -  predictions["WindProduction"] - predictions["PVgeneration"]
     netPredictions = predictions[["Datetime", "netLoad"]]
+    netPredictions = netPredictions.to_json(orient='records')
     # print(graphData)
     # print(data.head())
     # graphData = data[]
@@ -80,14 +81,16 @@ def predictAWeek(forecast, models):
         predictedWeather = pd.DataFrame([[row["apparentTemperature"],row["cloudCover"], row["precipIntensity"], row["windSpeed"]]], columns=["apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"])
         # print(predictedWeather)
         windprediction = models["Wind"].predict(predictedWeather)
-        # print(windprediction)
+        # print(type(windprediction))
+        # print(windprediction[0])
         buildingprediction = models["Building"].predict(predictedWeather)
         pvprediction = models["pv"].predict(predictedWeather)
-        tempFrame = pd.DataFrame([[windprediction, buildingprediction, pvprediction]] , columns=["WindProduction", "BuildingLoad", "PVgeneration"])
+        tempFrame = pd.DataFrame([[windprediction[0], buildingprediction[0], pvprediction[0]]] , columns=["WindProduction", "BuildingLoad", "PVgeneration"])
         # print(tempFrame.head())
         predictions = predictions.append(tempFrame)
         # print(predictions.head())
     # print(len(predictions.index))
+    print(predictions)
     predictions['Datetime'] = range(49)
     return predictions
 

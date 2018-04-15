@@ -38,8 +38,9 @@
         </div>
 
         <div class="jumbotron">
- 			<img src="https://cdn1.iconfinder.com/data/icons/industry-icon-set/512/wind_turbine_windmill-512.png" height="62" width="62">
- 			<img src="http://downloadicons.net/sites/default/files/sun-icon-76406.png" height="62" width="62">
+ 			<!--<img src="https://cdn1.iconfinder.com/data/icons/industry-icon-set/512/wind_turbine_windmill-512.png" height="62" width="62">-->
+ 			<!--<img src="http://downloadicons.net/sites/default/files/sun-icon-76406.png" height="62" width="62">-->
+            <svg id="forcasting" width="1000" height="500"></svg>
         </div>
 
         <p>{{ pv_data | safe }}</p>
@@ -53,6 +54,11 @@
     	var wind_data = {{ wind_data | safe }}
     	var pv_data = {{ pv_data | safe }}
     	var net_data = {{ net_data | safe }}
+
+    	var forecast_building = {{ forecast_building | safe }}
+    	var forecast_wind = {{ forecast_wind | safe }}
+    	var pvPredictions = {{ pvPredictions | safe }}
+    	var netLoad = {{ netLoad | safe }}
 
     	
 
@@ -71,6 +77,16 @@
 		});
 
 		var vis = d3.select("#visualisation"),
+				    WIDTH = 1000,
+				    HEIGHT = .7 * WIDTH; //aspect ratio is 0.7
+				    MARGINS = {
+				        top: 20,
+				        right: 20,
+				        bottom: 20,
+				        left: 50
+				    }
+
+		var vis2 = d3.select("#forcasting"),
 				    WIDTH = 1000,
 				    HEIGHT = .7 * WIDTH; //aspect ratio is 0.7
 				    MARGINS = {
@@ -162,8 +178,92 @@
 			.attr('stroke', 'purple')
 			.attr('stroke-width', 2)
 			.attr('fill', 'none');
+
+	/////////////
+	<!--var minDate = new Date(daterMin),-->
+    	<!--maxDate = new Date(daterMax);-->
+
+	}
+	function render2() {
+	    xScale  = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0,50]),
+		yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-2000,4000]),
+		xAxis = d3.svg.axis()
+    			.scale(xScale),
+  		yAxis = d3.svg.axis()
+    			.scale(yScale)
+    			.orient("left");
+
+    	vis2.append("svg:g")
+    		.attr("class","axis")
+    		.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    		.call(xAxis);
+
+    	vis2.append("svg:g")
+    		.attr("class","axis")
+    		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+    		.call(yAxis);
+
+    	var lineGen5 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(d.Datetime);
+					  })
+					  .y(function(d) {
+					    return yScale(d.PVgeneration);
+					  })
+					  .interpolate("basis");
+
+		var lineGen6 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(d.Datetime);
+					  })
+					  .y(function(d) {
+					    return yScale(d.WindProduction);
+					  })
+					  .interpolate("basis");
+
+		var lineGen7 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(d.Datetime);
+					  })
+					  .y(function(d) {
+					    return yScale(d.BuildingLoad);
+					  });
+
+		var lineGen8 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(d.Datetime);
+					  })
+					  .y(function(d) {
+					    return yScale(d.netLoad);
+					  });
+
+		vis2.append('svg:path')
+			.attr('d', lineGen5(pvPredictions))
+			.attr('stroke', 'green')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis2.append('svg:path')
+			.attr('d', lineGen6(forecast_wind))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis2.append('svg:path')
+			.attr('d', lineGen7(forecast_building))
+			.attr('stroke', 'red')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis2.append('svg:path')
+			.attr('d', lineGen8(netLoad))
+			.attr('stroke', 'purple')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
 	}
 	render();
+	render2();
 
     </script>
 </body>
