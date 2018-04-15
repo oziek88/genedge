@@ -49,6 +49,7 @@ def homepage():
     models = {"Wind": windPredictor, "Building": buildingPredictor, "pv": pvPredictor}
     forecastData = pd.read_csv("forecastcsv.csv")
     predictions = predictAWeek(forecastData, models)
+    print(predictions.head())
     buildingPredictions = predictions[["Datetime", "BuildingLoad"]]
     buildingPredictions = buildingPredictions.to_json(orient='records')
     windPredictions = predictions[["Datetime", "WindProduction"]]
@@ -74,12 +75,17 @@ def predictAWeek(forecast, models):
     predictions = pd.DataFrame(columns=["WindProduction", "BuildingLoad", "PVgeneration"])
     for i, row in forecast.iterrows():
         predictedWeather = pd.DataFrame([[row["apparentTemperature"],row["cloudCover"], row["precipIntensity"], row["windSpeed"]]], columns=["apparentTemperature", "cloudCover", "precipIntensity", "windSpeed"])
+        # print(predictedWeather)
         windprediction = models["Wind"].predict(predictedWeather)
+        # print(windprediction)
         buildingprediction = models["Building"].predict(predictedWeather)
         pvprediction = models["pv"].predict(predictedWeather)
         tempFrame = pd.DataFrame([[windprediction, buildingprediction, pvprediction]] , columns=["WindProduction", "BuildingLoad", "PVgeneration"])
-        predictions.append(tempFrame)
-    predictions['Datetime'] = range(24)
+        # print(tempFrame.head())
+        predictions = predictions.append(tempFrame)
+        # print(predictions.head())
+    # print(len(predictions.index))
+    predictions['Datetime'] = range(49)
     return predictions
 
 
