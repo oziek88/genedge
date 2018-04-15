@@ -56,6 +56,8 @@ def homepage():
     windPredictions = windPredictions.to_json(orient='records')
     pvPredictions = predictions[["Datetime", "PVgeneration"]]
     pvPredictions = pvPredictions.to_json(orient='records')
+    predictions["netLoad"] = predictions["BuildingLoad"] -  predictions["WindProduction"] - predictions["PVgeneration"]
+    netPredictions = predictions[["Datetime", "netLoad"]]
     # print(graphData)
     # print(data.head())
     # graphData = data[]
@@ -67,7 +69,8 @@ def homepage():
                  "net_data": netData,
                  "forecast_building": buildingPredictions,
                  "forecast_wind": windPredictions,
-                 "pvPredictions": pvPredictions
+                 "pvPredictions": pvPredictions,
+                 "netLoad": netPredictions
                  }
     return render_template("home.html", **variables)
 
