@@ -3,9 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <title>Suncode2018</title>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/justified-nav/justified-nav.css" rel="stylesheet">
+    <!-- Include Required Prerequisites -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+ 
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+	<style>
+		.axis path {
+		    fill: none;
+		    stroke: #777;
+		    shape-rendering: crispEdges;
+		}
+		.axis text {
+		    font-family: Lato;
+		    font-size: 13px;
+		}
+	</style>
 </head>
 <body>
     <h1> Welcome to {{ team }}'s application</h1>
+    <div class="container">
+ 
+        <div class="jumbotron">
+        	<input id="bootcalander" type="text" name="daterange" value="01/01/17 1:30 PM - 06/30/17 2:00 PM" onchange="render()" />
+ 			<svg id="visualisation" width="1000" height="500"></svg>
+        </div>
+
+        <div class="jumbotron">
+ 			<img src="https://cdn1.iconfinder.com/data/icons/industry-icon-set/512/wind_turbine_windmill-512.png" height="62" width="62">
+ 			<img src="http://downloadicons.net/sites/default/files/sun-icon-76406.png" height="62" width="62">
+        </div>
+
+        <p>{{ pv_data | safe }}</p>
+ 
+    </div>
+
+
+    <script type="text/javascript">
+
+    	var building_data = {{ building_data | safe }}
+    	var wind_data = {{ wind_data | safe }}
+    	var pv_data = {{ pv_data | safe }}
+    	var net_data = {{ net_data | safe }}
+
+    	
+
+    	function getDate(d) {
+	        return new Date(d.DateTime);
+	    }
+
+	    $(function() {
+		    $('input[name="daterange"]').daterangepicker({
+		        timePicker: true,
+		        timePickerIncrement: 30,
+		        locale: {
+		            format: 'MM/DD/YY h:mm A'
+		        }
+		    });
+		});
+
+		var vis = d3.select("#visualisation"),
+				    WIDTH = 1000,
+				    HEIGHT = .7 * WIDTH; //aspect ratio is 0.7
+				    MARGINS = {
+				        top: 20,
+				        right: 20,
+				        bottom: 20,
+				        left: 50
+				    }
+		
+		var daterMin = $('#bootcalander').val().slice(0,16);
+    	var daterMax = $('#bootcalander').val().slice(20,37);
+    			    
+	function render() {
+		
+		var minDate = new Date(daterMin),
+    	maxDate = new Date(daterMax);
+		xScale  = d3.time.scale().range([MARGINS.left, WIDTH - MARGINS.right]).domain([minDate, maxDate]),
+		yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-2000,4000]),
+		xAxis = d3.svg.axis()
+    			.scale(xScale),
+  		yAxis = d3.svg.axis()
+    			.scale(yScale)
+    			.orient("left");
+
+    	vis.append("svg:g")
+    		.attr("class","axis")
+    		.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    		.call(xAxis);
+
+    	vis.append("svg:g")
+    		.attr("class","axis")
+    		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+    		.call(yAxis);
+
+    	var lineGen = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(getDate(d));
+					  })
+					  .y(function(d) {
+					    return yScale(d.PVgeneration);
+					  })
+					  .interpolate("basis");
+
+		var lineGen2 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(getDate(d));
+					  })
+					  .y(function(d) {
+					    return yScale(d.WindProduction);
+					  })
+					  .interpolate("basis");
+
+		var lineGen3 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(getDate(d));
+					  })
+					  .y(function(d) {
+					    return yScale(d.BuildingLoad);
+					  });
+
+		var lineGen4 = d3.svg.line()
+					  .x(function(d) {
+					    return xScale(getDate(d));
+					  })
+					  .y(function(d) {
+					    return yScale(d.netLoad);
+					  });
+
+		vis.append('svg:path')
+			.attr('d', lineGen(pv_data))
+			.attr('stroke', 'green')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis.append('svg:path')
+			.attr('d', lineGen2(wind_data))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis.append('svg:path')
+			.attr('d', lineGen3(building_data))
+			.attr('stroke', 'red')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+		vis.append('svg:path')
+			.attr('d', lineGen4(net_data))
+			.attr('stroke', 'purple')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+	}
+	render();
+
+    </script>
 </body>
 <footer>{{ members }}</footer>
 </html>
